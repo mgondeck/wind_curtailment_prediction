@@ -1,0 +1,642 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "id": "cfa550c6-9997-4d78-8888-225e27dc51e3",
+      "metadata": {
+        "id": "cfa550c6-9997-4d78-8888-225e27dc51e3"
+      },
+      "source": [
+        "## Redispatch data of wind power plants in Langenhorn (Schleswig-Holstein)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "id": "7a67e350-893d-481d-b993-8cbdd76ac063",
+      "metadata": {
+        "tags": [],
+        "id": "7a67e350-893d-481d-b993-8cbdd76ac063"
+      },
+      "outputs": [],
+      "source": [
+        "# packages\n",
+        "import os\n",
+        "import pandas as pd\n",
+        "from datetime import datetime"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# mount your google drive\n",
+        "from google.colab import drive\n",
+        "drive.mount('/content/drive')\n",
+        "\n",
+        "# Path to the token file in your Google Drive\n",
+        "token_file_path = '/content/drive/My Drive/ignore/github_token.txt'\n",
+        "\n",
+        "# Read the token from the file\n",
+        "with open(token_file_path, 'r') as file:\n",
+        "    github_token = file.read().strip()\n",
+        "\n",
+        "# clone repo\n",
+        "!git clone https://mgondeck:{github_token}@github.com/mgondeck/wind_curtailment_prediction.git\n",
+        "\n",
+        "# navigate in project folder\n",
+        "os.chdir(\"/content/wind_curtailment_prediction\")"
+      ],
+      "metadata": {
+        "id": "kkWbw8_t8PM0",
+        "outputId": "962f63e7-c673-4c55-8d9b-ba21be870ed3",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "id": "kkWbw8_t8PM0",
+      "execution_count": 2,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Mounted at /content/drive\n",
+            "Cloning into 'wind_curtailment_prediction'...\n",
+            "remote: Enumerating objects: 61, done.\u001b[K\n",
+            "remote: Counting objects: 100% (61/61), done.\u001b[K\n",
+            "remote: Compressing objects: 100% (58/58), done.\u001b[K\n",
+            "remote: Total 61 (delta 30), reused 19 (delta 2), pack-reused 0\u001b[K\n",
+            "Receiving objects: 100% (61/61), 1.42 MiB | 7.09 MiB/s, done.\n",
+            "Resolving deltas: 100% (30/30), done.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "46bed8e3-43c2-4086-aed5-2e440801c06f",
+      "metadata": {
+        "id": "46bed8e3-43c2-4086-aed5-2e440801c06f"
+      },
+      "source": [
+        "**Redipatch data of the location Langenhorn**\n",
+        "\n",
+        "Website Redispatch data SH-Netz (DSO): https://www.sh-netz.com/de/energie-einspeisen/redispatch-2-0/einspeisemanagement/veroeffentlichungen/abgeschlossene-massnahmen.html"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 3,
+      "id": "fe307e03-1ac0-4abc-9bde-471776aa3ad5",
+      "metadata": {
+        "tags": [],
+        "id": "fe307e03-1ac0-4abc-9bde-471776aa3ad5"
+      },
+      "outputs": [],
+      "source": [
+        "df_redispatch = pd.read_csv(\"/content/drive/My Drive/ms_wind_curtailment_prediction/Redispatch_Langenhorn.csv\", sep = ';', parse_dates=['Start', 'Ende'])\n",
+        "\n",
+        "columns_to_keep = ['Start', 'Ende', 'Dauer (Min)',\n",
+        "                   'Stufe (%)', 'Ursache', 'Anlagenschlüssel']\n",
+        "                   #'Ort Engpass', 'Einsatz-ID', , 'Gebiet', 'Anforderer', 'Netzbetreiber',\n",
+        "                   #'Anlagen-ID', 'Entschädigungspflicht']\n",
+        "\n",
+        "column_name_mapping = {\n",
+        "#    'Einsatz-ID': 'mission_ID',\n",
+        "    'Start': 'start_redispatch',\n",
+        "    'Ende': 'end_redispatch',\n",
+        "    'Dauer (Min)': 'duration (min)',\n",
+        "#    'Gebiet': 'location',\n",
+        "#    'Ort Engpass': 'congestion_location',\n",
+        "    'Stufe (%)': 'level',\n",
+        "    'Ursache': 'cause',\n",
+        "    'Anlagenschlüssel': 'plant_key_eeg',\n",
+        "#    'Anforderer': 'requester',\n",
+        "#    'Netzbetreiber': 'grid_operator',\n",
+        "#    'Anlagen-ID': 'plant_ID',\n",
+        "#    'Entschädigungspflicht': 'compensation_obligation'\n",
+        "}\n",
+        "df_redispatch = df_redispatch[columns_to_keep].rename(columns=column_name_mapping)\n",
+        "\n",
+        "translation_dict = {\n",
+        "    'Netzengpass': 'grid congestion',\n",
+        "    'Funktionsnachweis': 'functional proof',\n",
+        "    'Kundenfunktionstest': 'customer function test',\n",
+        "    'Test': 'test',\n",
+        "    'Direktvermarkter': 'direct marketer',\n",
+        "    'Sonstige': 'other',\n",
+        "    'Vorgelagerter Netzbetreiber': 'upstream grid operator'\n",
+        "    }\n",
+        "\n",
+        "df_redispatch['cause'] = df_redispatch['cause'].map(translation_dict).fillna(df_redispatch['cause'])\n",
+        "\n",
+        "# change data types of columns\n",
+        "df_redispatch['start_redispatch'] = pd.to_datetime(df_redispatch['start_redispatch'], errors='coerce', format='mixed', dayfirst=True)\n",
+        "df_redispatch['end_redispatch'] = pd.to_datetime(df_redispatch['end_redispatch'], errors='coerce', format='mixed', dayfirst=True)\n",
+        "\n",
+        "# only select grid congestion cause\n",
+        "df_redispatch = df_redispatch[df_redispatch['cause'] == 'grid congestion']"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "f5cd8675-5423-4b74-a135-72a53589836d",
+      "metadata": {
+        "id": "f5cd8675-5423-4b74-a135-72a53589836d"
+      },
+      "source": [
+        "**EEG-keys and plant type data of Langenhorn (not only wind)**\n",
+        "\n",
+        "Website:\n",
+        "http://www.energymap.info/energieregionen/DE/105/119/477/19932.html"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 4,
+      "id": "83d848cb-bcd5-4797-8933-c7373a6d287c",
+      "metadata": {
+        "tags": [],
+        "id": "83d848cb-bcd5-4797-8933-c7373a6d287c"
+      },
+      "outputs": [],
+      "source": [
+        "df_eeg = pd.read_csv(\"/content/drive/My Drive/ms_wind_curtailment_prediction/EEG_Langenhorn.csv\", sep=';', dayfirst=True)\n",
+        "df_eeg['Inbetriebnahme'] = pd.to_datetime(df_eeg['Inbetriebnahme'], format='%d.%m.%Y', errors='coerce')\n",
+        "\n",
+        "columns_to_keep = ['Anlagenschluessel', 'Anlagentyp', 'Inbetriebnahme', 'DSO', 'TSO',\n",
+        "                   #'Nennleistung(kWp_el)', 'kWh(2013)', 'kWh(average)', 'kWh/kW',\n",
+        "                   'GPS-Lat', 'GPS-Lon']\n",
+        "\n",
+        "column_name_mapping = {\n",
+        "    'Inbetriebnahme': 'commissioning_date',\n",
+        "    'Anlagenschluessel': 'plant_key_eeg',\n",
+        "    'Anlagentyp': 'plant_type',\n",
+        "#    'Nennleistung(kWp_el)': 'rated_capacity_kWp', # bruttoleistung\n",
+        "    'DSO': 'dso',\n",
+        "    'TSO': 'tso',\n",
+        "#    'kWh(2013)': 'kWh_2013',\n",
+        "#    'kWh(average)': 'avg_kWh',\n",
+        "#    'kWh/kW': 'kWh/kW',\n",
+        "    'GPS-Lat': 'lat',\n",
+        "    'GPS-Lon': 'long'\n",
+        "}\n",
+        "\n",
+        "df_eeg = df_eeg[columns_to_keep].rename(columns=column_name_mapping)\n",
+        "\n",
+        "# change data types of columns\n",
+        "#df_eeg['rated_capacity_kWp'] = df_eeg['rated_capacity_kWp'].str.replace(',', '.')\n",
+        "#df_eeg['kWh_2013'] = df_eeg['kWh_2013'].str.replace('.', '')\n",
+        "#df_eeg['avg_kWh'] = df_eeg['avg_kWh'].str.replace('.', '')\n",
+        "#df_eeg['avg_kWh'] = df_eeg['avg_kWh'].str.replace(',', '.')\n",
+        "df_eeg['lat'] = df_eeg['lat'].str.replace(',', '.')\n",
+        "df_eeg['long'] = df_eeg['long'].str.replace(',', '.')\n",
+        "#df_eeg['kWh_2013'] = df_eeg['kWh_2013'].astype(float)\n",
+        "#df_eeg['rated_capacity_kWp'] = df_eeg['rated_capacity_kWp'].astype(float)\n",
+        "#df_eeg['avg_kWh'] = df_eeg['avg_kWh'].astype(float)\n",
+        "df_eeg['lat'] = df_eeg['lat'].astype(float)\n",
+        "df_eeg['long'] = df_eeg['long'].astype(float)\n",
+        "\n",
+        "translation_dict = {\n",
+        "    'Solarstrom': 'solar',\n",
+        "    'Biomasse': 'biomass',\n",
+        "    'Windkraft': 'wind',\n",
+        "    }\n",
+        "\n",
+        "df_eeg['plant_type'] = df_eeg['plant_type'].map(translation_dict).fillna(df_eeg['plant_type'])\n",
+        "\n",
+        "df_eeg.dropna(inplace = True)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "aed5b99a-08aa-418d-891f-8761d04deb5b",
+      "metadata": {
+        "id": "aed5b99a-08aa-418d-891f-8761d04deb5b"
+      },
+      "source": [
+        "**Filter wind and solar power plants in df_redispatch by mapping EEG-keys from df_eeg**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 24,
+      "id": "05970e93-fbbd-46f9-aa0c-89a5b04dba54",
+      "metadata": {
+        "tags": [],
+        "id": "05970e93-fbbd-46f9-aa0c-89a5b04dba54",
+        "outputId": "da1ed68d-e7c6-4b6f-e0f1-a93662f0387f",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array(['E20793012S12X00000000002414080001',\n",
+              "       'E20793012S12Z00000000002414080001',\n",
+              "       'E20793012S12000000000002414080001',\n",
+              "       'E20793012S12Y00000000002414080001',\n",
+              "       'E20793012S12V00000000002414080001',\n",
+              "       'E20793012S12W00000000002414080001',\n",
+              "       'E2079301EA01000000000070577400001',\n",
+              "       'E2079301EA01000000000070577400002',\n",
+              "       'E2079301EA01000000000070577400003',\n",
+              "       'E2079301EA01000000000070577400004',\n",
+              "       'E2079301EA01000000000070577400005',\n",
+              "       'E2079301EA01000000000070577400006'], dtype=object)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 24
+        }
+      ],
+      "source": [
+        "df_redispatch_wind = pd.merge(df_redispatch, df_eeg[df_eeg['plant_type'] == 'wind'], on='plant_key_eeg', how='inner')\n",
+        "df_redispatch_wind['plant_key_eeg'].unique() # 12 unique wind plants"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df_redispatch_solar = pd.merge(df_redispatch, df_eeg[df_eeg['plant_type'] == 'solar'], on='plant_key_eeg', how='inner')\n",
+        "df_redispatch_solar['plant_key_eeg'].unique() # 22 unique solar plants"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "bBkFKEPV74ON",
+        "outputId": "8c650925-cbff-4b49-f5a7-833d9bf760c1"
+      },
+      "id": "bBkFKEPV74ON",
+      "execution_count": 25,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array(['E20793012000000000000021348820001',\n",
+              "       'E20793014000000000000021354070001',\n",
+              "       'E20793012000000000000021309760001',\n",
+              "       'E20793012000000000000021246340001',\n",
+              "       'E20793012000000000000021466730001',\n",
+              "       'E20793012000000000000021402130001',\n",
+              "       'E20793012000000000000021470410001',\n",
+              "       'E20793012Z00000000000021470410002',\n",
+              "       'E20793012000000000000021345390002',\n",
+              "       'E2079301SZP0000000000040435100001',\n",
+              "       'E2079301S120000000000034798600001',\n",
+              "       'E2079301IZP0000000000039181100001',\n",
+              "       'E2079301IZP3000000000040435100001',\n",
+              "       'E20793012000000000000021046260001',\n",
+              "       'E20793012000000000000017784460001',\n",
+              "       'E20793012000000000000017784460002',\n",
+              "       'E20793012000000000000021272340001',\n",
+              "       'E2079302S120000000000027677700001',\n",
+              "       'E20793012000000000000021258820001',\n",
+              "       'E2079301S120000000000032103900002',\n",
+              "       'E20793012000000000000021345390001',\n",
+              "       'E20793012000000000000001345150001'], dtype=object)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 25
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "5338c8c9-755a-4d4b-bfe6-d4b8ee373b90",
+      "metadata": {
+        "id": "5338c8c9-755a-4d4b-bfe6-d4b8ee373b90"
+      },
+      "source": [
+        "**Look up if the are registered in the Marktstammdatenregister**\n",
+        "\n",
+        "Website:\n",
+        "https://www.marktstammdatenregister.de/MaStR/Einheit/Einheiten/OeffentlicheEinheitenuebersicht"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 64,
+      "id": "cf1939f7-54e8-498e-a0e1-3387d5909b7b",
+      "metadata": {
+        "tags": [],
+        "id": "cf1939f7-54e8-498e-a0e1-3387d5909b7b"
+      },
+      "outputs": [],
+      "source": [
+        "# Marktstammdatenregister Windkraft Langenhorn\n",
+        "df_register = pd.read_csv(\"/content/drive/My Drive/ms_wind_curtailment_prediction/Marktstammdatenregister_Langenhorn.csv\", sep = ';', parse_dates=['Inbetriebnahmedatum der Einheit'], dayfirst=True)\n",
+        "\n",
+        "# select relevant features\n",
+        "columns_to_keep = ['Anzeige-Name der Einheit', 'MaStR-Nr. der Einheit', 'Inbetriebnahmedatum der Einheit',\n",
+        "                   'Energieträger', 'Bruttoleistung der Einheit',\n",
+        "                   #'Nettonennleistung der Einheit', '\\tMaStR-Nr. des Anlagenbetreibers',\n",
+        "                   'Name des Anlagenbetreibers (nur Org.)']\n",
+        "\n",
+        "# translate column names\n",
+        "column_name_mapping = {\n",
+        "    'Anzeige-Name der Einheit': 'unit_name',\n",
+        "    'MaStR-Nr. der Einheit': 'plant_key_mastr',\n",
+        "    'Inbetriebnahmedatum der Einheit': 'commissioning_date',\n",
+        "    'Energieträger': 'plant_type',\n",
+        "    'Bruttoleistung der Einheit': 'gross_capacity',\n",
+        "#    'Nettonennleistung der Einheit': 'net_capacity',\n",
+        "#    '\\tMaStR-Nr. des Anlagenbetreibers': 'operator_key',\n",
+        "    'Name des Anlagenbetreibers (nur Org.)': 'operator_name'\n",
+        "}\n",
+        "\n",
+        "df_register = df_register[columns_to_keep].rename(columns=column_name_mapping)\n",
+        "df_register = df_register[df_register['operator_name'] != '(natürliche Person)']\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Wind**"
+      ],
+      "metadata": {
+        "id": "z_Absg5UAcIw"
+      },
+      "id": "z_Absg5UAcIw"
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Merge the DataFrames on 'commissioning_date'\n",
+        "df_redispatch_wind_registered = pd.merge(df_redispatch_wind, df_register[df_register['plant_type'] == 'Wind'],\n",
+        "                                         on='commissioning_date', how='inner').drop('plant_type_y', axis = 1)\n",
+        "\n",
+        "# manually looked up latitude and longitude values for each plant_key_mastr\n",
+        "coordinates = {\n",
+        "    'SEE987798529121': {'lat': '54.6727', 'long': '8.87871'},\n",
+        "    'SEE929976813660': {'lat': '54.67238', 'long': '8.86128'},\n",
+        "    'SEE955793159025': {'lat': '54.674777', 'long': '8.885012'},\n",
+        "    'SEE975321353732': {'lat': '54.67212', 'long': '8.86985'},\n",
+        "    'SEE964462351561': {'lat': '54.6594', 'long': '8.85654'},\n",
+        "    'SEE989327012883': {'lat': '54.667118', 'long': '8.862491'},\n",
+        "    'SEE944503500066': {'lat': '54.664171', 'long': '8.86336'},\n",
+        "    'SEE967713858420': {'lat': '54.666857', 'long': '8.869743'},\n",
+        "    'SEE978968638712': {'lat': '54.667329', 'long': '8.87676'},\n",
+        "    'SEE968633677399': {'lat': '54.664481', 'long': '8.877575'},\n",
+        "    'SEE923447900071': {'lat': '54.667751', 'long': '8.883703'}\n",
+        "}\n",
+        "\n",
+        "for index, row in df_redispatch_wind_registered.iterrows():\n",
+        "    plant_key = row['plant_key_mastr']\n",
+        "    lat = coordinates[plant_key]['lat']\n",
+        "    long = coordinates[plant_key]['long']\n",
+        "    df_redispatch_wind_registered.at[index, 'lat'] = lat\n",
+        "    df_redispatch_wind_registered.at[index, 'long'] = long\n",
+        "\n",
+        "# gross capacity in kW\n",
+        "unique_wind_plants = df_redispatch_wind_registered[['plant_key_eeg', 'plant_key_mastr', 'lat', 'long', 'operator_name', 'gross_capacity']].drop_duplicates().reset_index(drop = True)"
+      ],
+      "metadata": {
+        "id": "4M3yIBANAbJC"
+      },
+      "id": "4M3yIBANAbJC",
+      "execution_count": 65,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 66,
+      "id": "13f5787f-9360-4186-838d-d83227ccd725",
+      "metadata": {
+        "tags": [],
+        "id": "13f5787f-9360-4186-838d-d83227ccd725"
+      },
+      "outputs": [],
+      "source": [
+        "# store csv\n",
+        "# unique_wind_plants.to_csv('/content/drive/My Drive/ms_wind_curtailment_prediction/wind_plants_Langenhorn.csv',sep = ';', index=False)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Solar**"
+      ],
+      "metadata": {
+        "id": "kOSsJVvQlerM"
+      },
+      "id": "kOSsJVvQlerM"
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Merge the DataFrames on 'commissioning_date'\n",
+        "df_redispatch_solar_registered = pd.merge(df_redispatch_solar, df_register[df_register['plant_type'] == 'Solare Strahlungsenergie'],\n",
+        "                                         on='commissioning_date', how='inner').drop('plant_type_y', axis = 1)\n",
+        "\n",
+        "# gross capacity in kWp\n",
+        "unique_solar_plants = df_redispatch_solar_registered[['plant_key_eeg', 'plant_key_mastr', 'lat', 'long', 'operator_name', 'gross_capacity']].drop_duplicates().reset_index(drop = True)"
+      ],
+      "metadata": {
+        "id": "2UN36WI0APb1"
+      },
+      "id": "2UN36WI0APb1",
+      "execution_count": 67,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# store csv\n",
+        "# unique_solar_plants.to_csv('/content/drive/My Drive/ms_wind_curtailment_prediction/solar_plants_Langenhorn.csv',sep = ';', index=False)"
+      ],
+      "metadata": {
+        "id": "aSrnnt0Gl7nz"
+      },
+      "id": "aSrnnt0Gl7nz",
+      "execution_count": 68,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "id": "a40c741d-8b23-4365-94a6-2d7635f76ed2",
+      "metadata": {
+        "tags": [],
+        "id": "a40c741d-8b23-4365-94a6-2d7635f76ed2"
+      },
+      "source": [
+        "**Create a df minute-by-minute redispatch df of the registered wind and solar plants**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def minbymindf(start, end, redispatch_df, freq='10T'):\n",
+        "  # get slected subset of redispatch_df\n",
+        "  time_index = pd.date_range(start=start, end=end, freq=freq)\n",
+        "  subset_df = redispatch_df[(redispatch_df['start_redispatch'] >= start) & (redispatch_df['end_redispatch'] <= end)]\n",
+        "  # initiate df\n",
+        "  min_redispatch = pd.DataFrame(index=time_index)\n",
+        "  min_redispatch['redispatch'] = 0\n",
+        "  columns_to_copy = ['level', 'plant_key_eeg', 'plant_key_mastr',\n",
+        "                     'lat', 'long', 'operator_name', 'dso', 'tso']\n",
+        "  for column in columns_to_copy:\n",
+        "    min_redispatch[column] = ''\n",
+        "  # iterate over the subset_df\n",
+        "  for _, row in subset_df.iterrows():\n",
+        "      start = row['start_redispatch']\n",
+        "      end = row['end_redispatch']\n",
+        "      mask = (min_redispatch.index >= start) & (min_redispatch.index <= end)\n",
+        "      min_redispatch.loc[mask, 'redispatch'] = 1\n",
+        "      for column in columns_to_copy:\n",
+        "          min_redispatch.loc[mask, column] = row[column]\n",
+        "  # replace empty entries when redispatch is 0 with 0 instead of \"\"\n",
+        "  min_redispatch.loc[min_redispatch['redispatch'] == 0, :] = 0\n",
+        "\n",
+        "  return min_redispatch"
+      ],
+      "metadata": {
+        "id": "1EviWIZtroxN"
+      },
+      "id": "1EviWIZtroxN",
+      "execution_count": 72,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# one year (2022)\n",
+        "start = datetime(2022, 1, 1, 0, 0, 0)\n",
+        "end = datetime(2023, 1, 1, 0, 0, 0)"
+      ],
+      "metadata": {
+        "id": "LP8axBnntAG2"
+      },
+      "id": "LP8axBnntAG2",
+      "execution_count": 73,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Wind**"
+      ],
+      "metadata": {
+        "id": "ZwEjSqfEtxkQ"
+      },
+      "id": "ZwEjSqfEtxkQ"
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "2f815df7-ee21-4c1a-ab90-26951db62dc9",
+      "metadata": {
+        "tags": [],
+        "id": "2f815df7-ee21-4c1a-ab90-26951db62dc9"
+      },
+      "outputs": [],
+      "source": [
+        "# remove duplicates and unnecessary columns\n",
+        "df_redispatch_wind_registered.drop_duplicates(inplace = True)\n",
+        "df_redispatch_wind_registered.reset_index(inplace=True, drop=True)\n",
+        "\n",
+        "columns_to_remove = ['duration (min)', 'commissioning_date']\n",
+        "df_redispatch_wind_registered.drop(columns_to_remove, axis = 1, inplace = True)\n",
+        "\n",
+        "wind_redispatch = minbymindf(start, end, df_redispatch_wind_registered)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "5aaf185e-84ea-4b2f-8bae-85c5e35bd828",
+      "metadata": {
+        "id": "5aaf185e-84ea-4b2f-8bae-85c5e35bd828"
+      },
+      "outputs": [],
+      "source": [
+        "# store csv\n",
+        "# wind_redispatch.to_csv('/content/drive/My Drive/ms_wind_curtailment_prediction/wind_redispatch_2022.csv',sep = ';', index_label='timestamp')"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Solar**"
+      ],
+      "metadata": {
+        "id": "8X5e9cDtt_gr"
+      },
+      "id": "8X5e9cDtt_gr"
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# remove duplicates and unnecessary columns\n",
+        "df_redispatch_solar_registered.drop_duplicates(inplace = True)\n",
+        "df_redispatch_solar_registered.reset_index(inplace=True, drop=True)\n",
+        "\n",
+        "columns_to_remove = ['duration (min)', 'commissioning_date']\n",
+        "df_redispatch_solar_registered.drop(columns_to_remove, axis = 1, inplace = True)\n",
+        "\n",
+        "solar_redispatch = minbymindf(start, end, df_redispatch_solar_registered)"
+      ],
+      "metadata": {
+        "id": "1yBLyFR9-q3b"
+      },
+      "id": "1yBLyFR9-q3b",
+      "execution_count": 76,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# solar_redispatch[solar_redispatch['redispatch'] == 1]\n",
+        "\n",
+        "# store csv\n",
+        "# solar_redispatch.to_csv('/content/drive/My Drive/ms_wind_curtailment_prediction/solar_redispatch_2022.csv',sep = ';', index_label='timestamp')"
+      ],
+      "metadata": {
+        "id": "IfKJJ4FeuAju"
+      },
+      "id": "IfKJJ4FeuAju",
+      "execution_count": 79,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "q3pkWuqLufcX"
+      },
+      "id": "q3pkWuqLufcX",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3 (ipykernel)",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.11.3"
+    },
+    "colab": {
+      "provenance": []
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
