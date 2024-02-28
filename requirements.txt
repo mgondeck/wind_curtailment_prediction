@@ -9,4 +9,5 @@ altair==5.0.1
 pmdarima==2.0.3
 SQLAlchemy==2.0.15
 xgboost==1.4.0
-django==3.2.12
+django==4.1.13
+
