@@ -17,7 +17,8 @@ st.sidebar.page_link(page="/pages/eda_app.py", label="EDA", icon="🤖")
 st.title("Datensportverein 🕺🏽💃🏼")
 
 # Adding logo image
-st.image('cow.jpeg', width=100)  # Adjust the width as needed
+st.sidebar.markdown("---")
+st.sidebar.image('cow.jpeg', width=200)  # Adjust the width as needed
 
 # Provide the Google Drive sharing link to the CSV file
 url = 'https://drive.google.com/file/d/1YKpvt4VQCmPfUWfb528Qzju0vhcoWmqP/view?usp=sharing'
@@ -33,6 +34,7 @@ df_sample = df.sample(n=10, random_state=42)
 st.subheader("Overview of raw wind curtailment data 💨")
 st.dataframe(df_sample)
 
+st.markdown("---")
 # Provide the Google Drive sharing link to the CSV file
 map_url = 'https://drive.google.com/file/d/1P83-639-LZKvgvzzVvG9fk6UUsdYWceR/view?usp=sharing'
 

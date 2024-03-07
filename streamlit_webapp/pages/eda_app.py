@@ -8,6 +8,9 @@ import numpy as np
 
 from statsmodels.graphics.tsaplots import plot_acf
 
+st.sidebar.page_link(page="app.py", label="Home", icon="🏠")
+st.sidebar.page_link(page="/pages/eda_app.py", label="EDA", icon="🤖")
+
 st.title("Exploratory data analysis of wind curtailment data")
 
 # Provide the Google Drive sharing link to the CSV file
