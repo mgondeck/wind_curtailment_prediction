@@ -10,4 +10,7 @@ pmdarima==2.0.3
 SQLAlchemy==2.0.15
 xgboost==1.4.0
 django==4.1.13
+streamlit==1.31.0
+plotly==5.19.0
+watchdog==4.0.0
 

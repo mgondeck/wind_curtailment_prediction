@@ -134,3 +134,8 @@ dmypy.json
 # vscode Stuff
 .vscode
 
+# Streamlit
+.streamlit/
+.streamlit/cache/
+.streamlit/log.txt
+.streamlit/state.toml
