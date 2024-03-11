@@ -33,6 +33,20 @@ Timeseries split because: tbd.
 • only feature wind gust max
 
 
+**Streamlit**
+
+For MacOs/Linux users:
+```bash
+# Create virtual environment, activate it and install streamlit 
+pyenv local 3.11.3
+python -m venv .streamlit_env
+source .streamlit_env/bin/activate
+pip install -r requirements.txt
+```
+```bash
+# run the app 
+treamlit run app.py
+```
 
 
 ----
