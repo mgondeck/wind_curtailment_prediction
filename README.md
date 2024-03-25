@@ -1,6 +1,8 @@
 **Predict energy curtailment of wind power plants**\
 Marie Gondeck, Shashank Kumar
 
+
+mary test temp computer
 --- 
 
 **Background**
@@ -45,7 +47,7 @@ pip install -r requirements.txt
 ```
 ```bash
 # run the app 
-treamlit run app.py
+streamlit run app.py
 ```
 
 
