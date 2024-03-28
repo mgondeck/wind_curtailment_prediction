@@ -1,5 +1,5 @@
 **Predict energy curtailment of wind power plants**\
-Marie Gondeck, Shashank Kumar
+Marie Gondeck, Shashank Kumar 
 
 --- 
 
@@ -32,6 +32,8 @@ Timeseries split because: tbd.
 • no preprocessing\
 • only feature wind gust max
 
+**Advanced Model**
+
 
 **Streamlit**
 
@@ -45,7 +47,7 @@ pip install -r requirements.txt
 ```
 ```bash
 # run the app 
-treamlit run app.py
+streamlit run app.py
 ```
 
 
