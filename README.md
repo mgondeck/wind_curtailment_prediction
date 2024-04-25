@@ -11,6 +11,11 @@ To mitigate instabilities in grid frequency and voltage caused by sudden changes
 
 This model trained in this project focuses on **_Curtailment_**, a crucial aspect of redispatch efforts that involves reducing power plant output lower to current availability<sup>3</sup>. The excess energy that remains unused is termed curtailed energy. Curtailment thus results in wasted renewable energy capacity and places significant financial strain on power plant operators and potentially hindering progress toward renewable energy targets. Alternative approaches, such as storing or converting surplus energy, could offer more economically viable solutions.
 
+
+**Presentation** 
+
+tbd.
+
 **Data / EDA**
 
 tbd.
@@ -25,6 +30,10 @@ When estimating the performance of our models, we were faced with the challenge 
 Instead of splitting the datset randomly we thus maintained the same class distribution in each test subset by incorporating statification. 
 Timeseries split because: tbd.
 
+
+**Time dependancy / Lagging**
+
+tbd.
 
 **Baseline Model**
 
