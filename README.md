@@ -18,7 +18,7 @@ tbd.
 
 **Data / EDA**
 
-tbd.
+tbd. to use data, csvs must be saved in google drive
 
 **Class Imbalance**
 
