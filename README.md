@@ -18,7 +18,23 @@ tbd.
 
 **Data / EDA**
 
-tbd. to use data, csvs must be saved in google drive
+1. tbd. to use data, csvs must be saved in google drive and folder created "wind_curtailment_prediction"
+
+
+ 
+
+In this notebook, we conduct thorough analyses to understand our dataset's structure, patterns, and relationships.
+Class imbalance
+Examine how our target variable is distributed across different classes. This analysis reveals the need for oversampling techniques to address any imbalances and improve model performance.
+Target variable against time
+Investigate how our target variable relates to time to uncover any seasonal trends. This exploration helped us decide whether to include time-related features in our models (e.g., season, day of the week).
+(Partial) Autocorrelations
+Explore whether features exhibit any time dependencies. This analysis suggests the importance of lagging features to capture temporal patterns effectively.
+Feature Exploration
+Thoroughly understand our dataset's features using simple techniques like data visualization, outlier detection, and examining feature distribution and correlation
+
+
+
 
 **Class Imbalance**
 
