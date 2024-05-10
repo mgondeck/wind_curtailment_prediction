@@ -9,7 +9,13 @@ The increasing integration of renewable energy sources into the grid poses signi
 
 To mitigate instabilities in grid frequency and voltage caused by sudden changes in electricity production or demand, transmission operators employ redispatch measures. **_Redispatch_** involves adjusting the initial dispatch schedule, which outlines the power generation plans of various power plants based on their reported capacity. Thereby, transmission operators can regulate the output of power plants, reducing congestion upstream and downstream, albeit at a cost in form of compensation payments for the plant operators. In Europe, these expenses are typically passed on to consumers through higher grid tariffs, negatively impacting overall economic welfare<sup>2</sup>.
 
-This model trained in this project focuses on **_Curtailment_**, a crucial aspect of redispatch efforts that involves reducing power plant output lower to current availability<sup>3</sup>. The excess energy that remains unused is termed curtailed energy. Curtailment thus results in wasted renewable energy capacity and places significant financial strain on power plant operators and potentially hindering progress toward renewable energy targets. Alternative approaches, such as storing or converting surplus energy, could offer more economically viable solutions.
+The models trained in this project focuses on **_Curtailment_**, a crucial aspect of redispatch efforts that involves reducing power plant output lower to current availability<sup>3</sup>. The excess energy that remains unused is termed curtailed energy. Curtailment thus results in wasted renewable energy capacity and places significant financial strain on power plant operators and potentially hindering progress toward renewable energy targets. Alternative approaches, such as storage or conversion of surplus energy, could offer more economically viable solutions. However, this requires knowing whether curtailment will take place - predicting this is the aim of this work. 
+
+**How to use it**
+
+The preferred way is to work with Google Colab and Drive, as we store the files and models in a google drive folder. However, you can also fork the repository and work with Jupyterlab, in which case you will need to adjust the data paths. 
+
+1. Navigate through the notebooks in the 'data' folder and download the feature and target data as csv files from the corresponding websites.  
 
 
 **Presentation** 
@@ -18,7 +24,7 @@ tbd.
 
 **Data / EDA**
 
-1. tbd. to use data, csvs must be saved in google drive and folder created "wind_curtailment_prediction"
+
 
 
  
@@ -69,8 +75,7 @@ pyenv local 3.11.3
 python -m venv .streamlit_env
 source .streamlit_env/bin/activate
 pip install -r requirements.txt
-```
-```bash
+
 # run the app 
 streamlit run app.py
 ```
