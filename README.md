@@ -15,29 +15,15 @@ The models trained in this project focuses on **_Curtailment_**, a crucial aspec
 
 The preferred way is to work with Google Colab and Drive, as we store the files and models in a google drive folder. However, you can also fork the repository and work with Jupyterlab, in which case you will need to adjust the data paths. 
 
-1. Navigate through the notebooks in the 'data' folder and download the feature and target data as csv files from the corresponding websites.  
+1. **_Data_**: Navigate through the notebooks in the 'data' folder and download the feature and target data as csv files from the corresponding websites.  
+2. **_Baseline Model_**: the baseline folder contains a very simple prediction model, which acts as a performance benchmark against which our advanced model can be compared. 
+3. **_Advanced Models_**: 
 
-
-**Presentation** 
-
-tbd.
-
-**Data / EDA**
+x. **_Presentation_**: 
 
 
 
 
- 
-
-In this notebook, we conduct thorough analyses to understand our dataset's structure, patterns, and relationships.
-Class imbalance
-Examine how our target variable is distributed across different classes. This analysis reveals the need for oversampling techniques to address any imbalances and improve model performance.
-Target variable against time
-Investigate how our target variable relates to time to uncover any seasonal trends. This exploration helped us decide whether to include time-related features in our models (e.g., season, day of the week).
-(Partial) Autocorrelations
-Explore whether features exhibit any time dependencies. This analysis suggests the importance of lagging features to capture temporal patterns effectively.
-Feature Exploration
-Thoroughly understand our dataset's features using simple techniques like data visualization, outlier detection, and examining feature distribution and correlation
 
 
 
@@ -56,14 +42,6 @@ Timeseries split because: tbd.
 **Time dependancy / Lagging**
 
 tbd.
-
-**Baseline Model**
-
-• not lagged\
-• no preprocessing\
-• only feature wind gust max
-
-**Advanced Model**
 
 
 **Streamlit**
