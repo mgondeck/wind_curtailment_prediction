@@ -10,12 +10,10 @@ from utils import load_data
 
 # sidebar 
 st.sidebar.page_link(page="app.py", label="Home", icon="🏠")
-st.sidebar.page_link(page="/pages/data_app.py", label="Data")#, icon="🤖")
+st.sidebar.page_link(page="/pages/data_app.py", label="Data")
 st.sidebar.page_link(page="/pages/baseline_app.py", label="Baseline")
 st.sidebar.page_link(page="/pages/advanced_model_app.py", label="Advanced Model")
 st.sidebar.markdown("---")
-st.sidebar.image('cow.jpeg', width=200) 
-st.sidebar.write("Datensportverein 🕺🏽💃🏼")
 
 # title
 st.title("Advanced Model")
@@ -36,7 +34,7 @@ df = load_data(path, ';')
 ########################################################
 
 df_lag = df.copy()
-df_lag.drop(['level', 'actual_solar_MW'], axis = 1, inplace=True)
+df_lag.drop(['level'], axis = 1, inplace=True)
 
 name_mapping = {
     'redispatch': 'Curtailment',
@@ -57,7 +55,8 @@ df_lag = df_lag.rename(columns=name_mapping)
 df_lagged = pd.DataFrame(index=df_lag.index)
 for feature in df_lag.columns: 
     df_lagged[feature] = df_lag[feature]
-    df_lagged[feature + '_lag'] = df_lag[feature].shift(1)
+    df_lagged[feature + '_lag_1'] = df_lag[feature].shift(1)
+    df_lagged[feature + '_lag_2'] = df_lag[feature].shift(2)
 
 df_lagged.dropna(inplace = True) # maybe better ways
 df_lagged.drop(['Curtailment_lag'], axis=1, inplace = True)

@@ -14,8 +14,6 @@ st.sidebar.page_link(page="/pages/data_app.py", label="Data")#, icon="🤖")
 st.sidebar.page_link(page="/pages/baseline_app.py", label="Baseline")
 st.sidebar.page_link(page="/pages/advanced_model_app.py", label="Advanced Model")
 st.sidebar.markdown("---")
-st.sidebar.image('cow.jpeg', width=200) 
-st.sidebar.write("Datensportverein 🕺🏽💃🏼")
 
 # title
 st.title("Predict wind energy curtailment 💨")

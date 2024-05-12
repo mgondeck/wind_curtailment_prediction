@@ -9,11 +9,15 @@ The increasing integration of renewable energy sources into the grid poses signi
 
 To mitigate instabilities in grid frequency and voltage caused by sudden changes in electricity production or demand, transmission operators employ redispatch measures. **_Redispatch_** involves adjusting the initial dispatch schedule, which outlines the power generation plans of various power plants based on their reported capacity. Thereby, transmission operators can regulate the output of power plants, reducing congestion upstream and downstream, albeit at a cost in form of compensation payments for the plant operators. In Europe, these expenses are typically passed on to consumers through higher grid tariffs, negatively impacting overall economic welfare<sup>2</sup>.
 
-The models trained in this project focuses on **_Curtailment_**, a crucial aspect of redispatch efforts that involves reducing power plant output lower to current availability<sup>3</sup>. The excess energy that remains unused is termed curtailed energy. Curtailment thus results in wasted renewable energy capacity and places significant financial strain on power plant operators and potentially hindering progress toward renewable energy targets. Alternative approaches, such as storage or conversion of surplus energy, could offer more economically viable solutions. However, this requires knowing whether curtailment will take place - predicting this is the aim of this work. 
+The models trained in this project focuses on **_Curtailment_**, a crucial aspect of redispatch efforts that involves reducing power plant output lower to current availability<sup>3</sup>. The excess energy that remains unused is termed curtailed energy. Curtailment thus results in wasted renewable energy capacity and places significant financial strain on power plant operators and potentially hindering progress toward renewable energy targets. Alternative approaches, such as storage or conversion of surplus energy, could offer more economically viable solutions. However, this requires knowing whether curtailment will take place - predicting this for eleven selected wind power plants in Langenhorn (North-Germany) is the aim of this work. 
+
+
+![](map_windmills.png)
+
 
 ---
 
-**Results and Outlook**
+**Results and future work**
 
 Our best-performing XGBoost model achieved a precision of 42% in predicting the occurrence of curtailment. To achieve greater precision, the integration of additional features is a key objective. For instance, incorporating grid demand and supply metrics, such as frequency and voltage fluctuations, could indicate stability issues requiring curtailment to maintain grid integrity. Understanding the times of peak electricity demand and including generation data from other renewable sources, such as solar, hydropower, and biomass, could help contextualise the overall energy landscape and its impact on wind energy utilisation. Furthermore, market-related features, including energy prices and carbon credit prices, could also influence curtailment decisions, as economic considerations often dictate energy production strategies.
 
@@ -30,13 +34,13 @@ The preferred way is to work with Google Colab and Drive, as we store the files 
 - **_Presentation & Webapp_**: the main folder contains a presentation we created for a general audience that presents our findings. Furthermore, we have developed a web application with Streamlit for our EDA component. This can be used as follows: 
 
 ```bash
-# for Linux/MacOs users
-# create virtual environment, activate it and install streamlit 
+# create virtual environment, activate it and install streamlit (Linux/MacOs users)
 pyenv local 3.11.3
 python -m venv .streamlit_env
 source .streamlit_env/bin/activate
 pip install -r requirements.txt
 
+# navigate in the streamlit_webapp folder
 # run the app 
 streamlit run app.py
 ```
