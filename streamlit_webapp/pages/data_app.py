@@ -10,12 +10,10 @@ from utils import load_data, smote_data, date_interval
 
 # sidebar 
 st.sidebar.page_link(page="app.py", label="Home", icon="🏠")
-st.sidebar.page_link(page="/pages/data_app.py", label="Data")#, icon="🤖")
+st.sidebar.page_link(page="/pages/data_app.py", label="Data")
 st.sidebar.page_link(page="/pages/baseline_app.py", label="Baseline")
 st.sidebar.page_link(page="/pages/advanced_model_app.py", label="Advanced Model")
 st.sidebar.markdown("---")
-st.sidebar.image('cow.jpeg', width=200) 
-st.sidebar.write("Datensportverein 🕺🏽💃🏼")
 
 # title
 st.title("Data")
@@ -36,7 +34,7 @@ df = load_data(path, ';')
 ########################################################
 
 df_display = df.copy()
-df_display.drop(['level', 'actual_solar_MW'], axis = 1, inplace=True)
+df_display.drop(['level'], axis = 1, inplace=True)
 
 name_mapping = {
     'redispatch': 'Curtailment',
